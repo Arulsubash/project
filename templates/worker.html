@@ -1,0 +1,279 @@
+{% extends "layout.html" %}
+{% block body %}
+<div id="root" style="background-color: #f9fafb; padding: 0px">
+    <div class="d-flex p-2" id="nav-bar">
+        <div>
+            <h1 id="headline">CampusCare</h1>
+            <button id="button-worker" style="background-color: #16a34a; color: white; border: none; border-radius: 10px;">Worker</button>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <div class="dropdown">
+                <a href="#" class="d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown">
+                <i class="bi bi-person-circle fs-4" id="user" style="padding: 7px 12px; border-radius: 8px; color: black"></i>
+                </a>
+                <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#workerProfileModal">Profile</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="home-content">
+        <div id="request-title">
+            <div>
+                <h2>My Assigned Tasks</h2>
+                <p>View and update your assigned service requests</p>
+            </div>
+        </div>
+
+        <div id="search-containner" class="mb-4">
+            <span class="input-group-text" style="background-color: white; border-radius: 6px 0px 0px 6px; height:40px;">
+                <i class="bi bi-search"></i>
+            </span>
+            <input id="input" type="text" placeholder="Search your tasks..." aria-label="Search">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-funnel"></i>
+                <span id="selected-filter">All</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                <li><h6 class="dropdown-header">Status</h6></li>
+                <li><a class="dropdown-item filter-option" data-filter="all">All</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="pending">Pending</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="in progress">In Progress</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="completed">Completed</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Priority</h6></li>
+                <li><a class="dropdown-item filter-option" data-filter="low">Low Priority</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="medium">Medium Priority</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="high">High Priority</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="row g-4" id="tasks-container">
+            {% for request in assigned_requests %}
+            <div class="col-12 col-md-6 col-lg-4 task-card">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <h5 class="card-title mb-1">
+                            {{ request.title }}
+                            <span class="badge float-end
+                                {% if request.status == 'Completed' %}bg-success
+                                {% elif request.status == 'In Progress' %}bg-primary
+                                {% else %}bg-secondary{% endif %}">
+                                {{ request.status }}
+                            </span>
+                        </h5>
+                        <p class="text-muted mb-3">{{ request.description }}</p>
+                        <p class="mb-1"><class="bi bi-geo-alt"></i> {{ request.location }}</p>
+                        <p class="mb-1"><i class="bi bi-clock"></i> {{ request.date }}</p>
+                        <p class="mb-1">
+                            <i class="bi bi-flag"></i>
+                            <span class="{% if request.priority == 'high' %}text-danger
+                                {% elif request.priority == 'medium' %}text-warning
+                                {% else %}text-info{% endif %}">
+                                {{ request.priority|capitalize }} Priority
+                            </span>
+                        </p>
+                        <p class="mb-1">
+                            <i class="bi bi-building"></i> Department: {{ request.department or "Not specified" }}
+                        </p>
+
+                        {% if request.notes %}
+                        <div class="mt-3">
+                            <h6>Admin Notes:</h6>
+                            <p class="text-muted small">{{ request.notes }}</p>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex flex-column mt-auto">
+                            {% if request.image_path %}
+                            <div class="mb-2 d-flex justify-content-end">
+                                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#imageModal" data-image-path="{{ request.image_path }}">
+                                    <i class="bi bi-image"></i> Student Attachment
+                                </button>
+                            </div>
+                            {% endif %}
+                            
+                            {% if request.worker_image_path %}
+                            <div class="mb-2 d-flex justify-content-end">
+                                <button type="button" class="btn btn-sm btn-outline-info" data-bs-toggle="modal" data-bs-target="#imageModal" data-image-path="{{ request.worker_image_path }}">
+                                    <i class="bi bi-image"></i> Your Attachment
+                                </button>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#updateModal{{ request.id }}">
+                                    Update Status
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal fade" id="updateModal{{ request.id }}" tabindex="-1" aria-labelledby="updateModalLabel{{ request.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="updateModalLabel{{ request.id }}">Update Request Status</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form action="/update-request" method="POST" enctype="multipart/form-data">
+                            <div class="modal-body">
+                                <input type="hidden" name="request_id" value="{{ request.id }}">
+                                <div class="mb-3">
+                                    <label for="statusSelect{{ request.id }}" class="form-label">Status</label>
+                                    <select class="form-select" id="statusSelect{{ request.id }}" name="status" required>
+                                        <option value="Pending" {% if request.status == 'Pending' %}selected{% endif %}>Pending</option>
+                                        <option value="In Progress" {% if request.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+                                        <option value="Completed" {% if request.status == 'Completed' %}selected{% endif %}>Completed</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="workerNotes{{ request.id }}" class="form-label">Work Notes (Optional)</label>
+                                    <textarea class="form-control" id="workerNotes{{ request.id }}" name="worker_notes" rows="3" placeholder="Add details about the work performed...">{{ request.worker_notes or '' }}</textarea>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="workerImage{{ request.id }}" class="form-label">Attach Work Image (Optional)</label>
+                                    <input class="form-control" type="file" id="workerImage{{ request.id }}" name="worker_image" accept="image/*">
+                                    <div class="form-text">Upload an image showing the completed work or current progress.</div>
+                                </div>
+                                
+                                {% if request.worker_image_path %}
+                                <div class="mb-3">
+                                    <label class="form-label">Current Attached Image:</label>
+                                    <div>
+                                        <img src="{{ url_for('static', filename='uploads/' + request.worker_image_path) }}" class="img-thumbnail" alt="Current work image" style="max-height: 150px;">
+                                    </div>
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-primary">Update Status</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="col-12">
+                <div class="alert alert-info" role="alert">
+                    You don't have any assigned requests at the moment.
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="modal fade" id="workerProfileModal" tabindex="-1" aria-labelledby="workerProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="workerProfileModalLabel">Worker Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <p><strong>Name:</strong> {{ name }}</p>
+                        <p><strong>Role:</strong> Worker</p>
+                        <p><strong>Assigned Tasks:</strong> {{ assigned_requests|length }}</p>
+                    </div>
+                    <hr>
+                    <h6 class="mb-3">Reset Password</h6>
+                    <form method="POST" action="/reset-password">
+                        <div class="mb-3">
+                            <input type="password" class="form-control" id="newPassword" name="new_password">
+                        </div>
+                        <button type="submit" class="btn btn-danger">Reset Password</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Attached Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" class="img-fluid" alt="Attached Image">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Search functionality for worker tasks
+document.getElementById("input").addEventListener("keyup", function() {
+    const searchTerm = this.value.toLowerCase();
+    const taskCards = document.querySelectorAll(".task-card");
+    
+    taskCards.forEach(card => {
+        const text = card.textContent.toLowerCase();
+        card.style.display = text.includes(searchTerm) ? "block" : "none";
+    });
+});
+
+// Filter functionality for worker tasks
+document.querySelectorAll(".filter-option").forEach(item => {
+    item.addEventListener("click", function() {
+        const filterValue = this.getAttribute("data-filter").toLowerCase();
+        document.getElementById("selected-filter").textContent = this.textContent;
+        
+        const taskCards = document.querySelectorAll(".task-card");
+        
+        taskCards.forEach(card => {
+            const status = card.querySelector(".badge").textContent.toLowerCase();
+            const priority = card.querySelector(".text-danger, .text-warning, .text-info").textContent.toLowerCase();
+            
+            let showCard = true;
+            
+            if (filterValue !== "all") {
+                if (["pending", "in progress", "completed"].includes(filterValue)) {
+                    showCard = status.includes(filterValue);
+                } else if (["low", "medium", "high"].includes(filterValue)) {
+                    showCard = priority.includes(filterValue);
+                }
+            }
+            
+            card.style.display = showCard ? "block" : "none";
+        });
+    });
+});
+
+// Add password confirmation
+document.addEventListener('DOMContentLoaded', function() {
+    const passwordForm = document.querySelector('#workerProfileModal form');
+    if (passwordForm) {
+        passwordForm.addEventListener('submit', function(e) {
+            const password = document.getElementById('newPassword').value;
+            if (password.length < 6) {
+                e.preventDefault();
+                alert('Password must be at least 6 characters long.');
+            }
+        });
+    }
+});
+
+// Image Modal Event Listener for all pages
+document.getElementById('imageModal').addEventListener('show.bs.modal', function (event) {
+    const button = event.relatedTarget;
+    const imagePath = button.getAttribute('data-image-path');
+    const modalImage = this.querySelector('#modalImage');
+    
+    if (imagePath) {
+        modalImage.src = `/static/uploads/${imagePath}`;
+    }
+});
+</script>
+{% endblock %}

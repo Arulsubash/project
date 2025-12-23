@@ -1,0 +1,206 @@
+{% extends "layout.html" %}
+{% block body %}
+<div id="root" style="background-color: #e0e7ff;">
+   <div id="info-containner">
+      <div id="title">
+         <h1>CampusCare Portal</h1>
+      </div>
+      <div id="info">
+         <p>Select your role to access the appropriate dashboard</p>
+      </div>
+   </div>
+   {% with messages = get_flashed_messages() %}
+   {% if messages %}
+   {% for message in messages %}
+      <div class="alert alert-danger" role="alert" style="width: 20%; text-align: center; margin: 0px auto">{{ message }}</div>
+   {% endfor %}
+   {% endif %}
+   {% endwith %}
+   <!--Role Selection-->
+   <div class="d-flex flex-column flex-md-row align-items-center justify-content-center gap-4 p-4 bg-#e0e7ff">
+      <div id="role-box" class="text-center p-4 rounded" style="background-color: #eef4ff;">
+         <i class="bi bi-mortarboard" style="font-size: 2.5rem; color: #2563eb;"></i>
+         <h5 class="mt-2 fw-bold">Student</h5>
+         <p style="font-size: 16px; color: #4B5563; margin-bottom:24px;">Submit and track service requests for campus facilities</p>
+         <button id="student-button" type="button" class="btn btn-primary" style="background-color: #0F172A" onclick="login(event)">Enter as Student</button>
+      </div>
+
+      <div id="role-box" class="text-center p-4 rounded" style="background-color: #fff1f1;">
+         <i class="bi bi-shield" style="font-size: 2.5rem; color: #dc2626;"></i>
+         <h5 class="mt-2 fw-bold">Administrator</h5>
+         <p style="font-size: 16px; color: #4B5563; margin-bottom:24px;">Manage requests, assign tasks, and oversee operations</p>
+         <button id="admin-button" type="button" class="btn btn-primary" style="background-color: #EF4444" onclick="login(event)">Enter as Admin</button>
+      </div>
+
+      <div id="role-box" class="text-center p-4 rounded" style="background-color: #e7fbee;">
+         <i class="bi bi-wrench" style="font-size: 2.5rem; color: #16a34a;"></i>
+         <h5 class="mt-2 fw-bold">Worker</h5>
+         <p style="font-size: 16px; color: #4B5563; margin-bottom:24px;">View assigned tasks and complete the asigned work ASAP</p>
+         <button id="worker-button" type="button" class="btn btn-primary" style="background-color: #0F172A" onclick="login(event)">Enter as Worker</button>
+      </div>
+   </div>
+   
+   <!--Login and Registration Form-->
+   <!--Student Login-->
+   <div id="student-containner">
+      <div id="login" class="text-center p-4 rounded" style="background-color: #d8e6fd;">
+         <i class="bi bi-mortarboard" style="font-size: 2.5rem; color: #2563eb; "></i>
+         <h5 class="mt-2 fw-bold">Student Login</h5>
+         <form action="/" method="POST">
+            <input name="studentID" placeholder="Enter Registered mailId" type="email" required></input><br>
+            <input name="studentPass" placeholder="Enter Password" type="password" required></input><br>
+            <div class="text-end mb-3" style="display: flex; justify-content: center;">
+                <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#studentForgotPasswordModal" style>
+                    Forgot Password?
+                </button>
+            </div>
+            <button id="student-button" type="submit" class="btn btn-primary" style="background-color: #0F172A">Login as Student</button>
+         </form>
+         <p style="margin-top: 20px; ">Register as Student<span><button type="button" class="btn btn-link" onclick="login(event)" style="margin: 0px; padding: 0px 0px 0px 5px; text-decoration: none;">click here</button></span><p>
+      </div>
+   </div>
+   <!--Student Registration-->
+   <div id="student-registration">
+      <div id="login" class="text-center p-4 rounded" style="background-color: #d8e6fd;">
+         <i class="bi bi-mortarboard" style="font-size: 2.5rem; color: #2563eb; "></i>
+         <h5 class="mt-2 fw-bold">Student Registration</h5>
+         <form action="/" method="POST">
+            <input name="username" placeholder="Username" type="text" required></input><br>
+            <input name="mailID"placeholder="Enter mailId" type="email" required></input><br>
+            <input name="pass" placeholder="Password" type="password" required></input><br>
+            <input name="conformPass" placeholder="Conform Password" type="password" required></input><br>
+            <button id="register-button" type="submit" class="btn btn-primary" style="background-color: #0F172A">Register as Student</button>
+         </form>
+      </div>
+   </div>
+   <!--Admin-->
+   <div id="admin-containner">
+      <div id="login" class="text-center p-4 rounded" style="background-color: #fff1f1;">
+         <i class="bi bi-shield" style="font-size: 2.5rem; color: #dc2626;"></i>
+         <h5 class="mt-2 fw-bold">Admin Login</h5>
+         <form action="/" method="POST">
+            <input name="adminID" placeholder="Enter Registered mailId" type="email" required></input><br>
+            <input name="adminPass" placeholder="Enter Password" type="password" required></input><br>
+            <div class="text-end mb-3" style="display: flex; justify-content: center;">
+                <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#adminForgotPasswordModal">
+                    Forgot Password?
+                </button>
+            </div>
+            <input id="error" hidden value="{{error}}"></input>
+            <button id="admin-button" type="submit" class="btn btn-primary" style="background-color: #EF4444">Login as Admin</button>
+         </form>
+      </div>
+   </div>
+   <!--Worker-->
+   <div id="worker-containner">
+      <div id="login" class="text-center p-4 rounded" style="background-color: #e7fbee;">
+         <i class="bi bi-wrench" style="font-size: 2.5rem; color: #16a34a;"></i>
+         <h5 class="mt-2 fw-bold">Worker Login</h5>
+         <form action="/" method="POST">
+            <input name="workerID" placeholder="Enter Registered mailId" type="email" required></input><br>
+            <input name="workerPass" placeholder="Enter Password" type="password" required></input><br>
+            <div class="text-end mb-3" style="display: flex; justify-content: center;">
+                <button type="button" class="btn btn-link p-0" data-bs-toggle="modal" data-bs-target="#workerForgotPasswordModal">
+                    Forgot Password?
+                </button>
+            </div>
+            <button id="worker-button" type="submit" class="btn btn-primary" style="background-color: #0F172A">Login as Worker</button>
+         </form>
+      </div>
+   </div>
+   
+   <!-- Student Forgot Password Modal -->
+   <div class="modal fade" id="studentForgotPasswordModal" tabindex="-1" aria-labelledby="studentForgotPasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="studentForgotPasswordModalLabel">Student Password Reset</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <p>Enter your student email address and new password.</p>
+               <form action="/forgot-password/student" method="POST">
+                  <div class="mb-3">
+                     <label for="studentResetEmail" class="form-label">Student Email Address</label>
+                     <input type="email" class="form-control" id="studentResetEmail" name="email" required>
+                  </div>
+                  <div class="mb-3">
+                     <label for="studentNewPassword" class="form-label">New Password</label>
+                     <input type="password" class="form-control" id="studentNewPassword" name="new_password" required>
+                  </div>
+                  <div class="mb-3">
+                     <label for="studentConfirmPassword" class="form-label">Confirm Password</label>
+                     <input type="password" class="form-control" id="studentConfirmPassword" name="confirm_password" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+               </form>
+            </div>
+         </div>
+      </div>
+   </div>
+   
+   <!-- Admin Forgot Password Modal -->
+   <div class="modal fade" id="adminForgotPasswordModal" tabindex="-1" aria-labelledby="adminForgotPasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="adminForgotPasswordModalLabel">Admin Password Reset</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <p>Enter your admin email address and new password.</p>
+               <form action="/forgot-password/admin" method="POST">
+                  <div class="mb-3">
+                     <label for="adminResetEmail" class="form-label">Admin Email Address</label>
+                     <input type="email" class="form-control" id="adminResetEmail" name="email" required>
+                  </div>
+                  <div class="mb-3">
+                     <label for="adminNewPassword" class="form-label">New Password</label>
+                     <input type="password" class="form-control" id="adminNewPassword" name="new_password" required>
+                  </div>
+                  <div class="mb-3">
+                     <label for="adminConfirmPassword" class="form-label">Confirm Password</label>
+                     <input type="password" class="form-control" id="adminConfirmPassword" name="confirm_password" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+               </form>
+            </div>
+         </div>
+      </div>
+   </div>
+   
+   <!-- Worker Forgot Password Modal -->
+   <div class="modal fade" id="workerForgotPasswordModal" tabindex="-1" aria-labelledby="workerForgotPasswordModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+         <div class="modal-content">
+            <div class="modal-header">
+               <h5 class="modal-title" id="workerForgotPasswordModalLabel">Worker Password Reset</h5>
+               <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+               <p>Enter your worker email address and new password.</p>
+               <form action="/forgot-password/worker" method="POST">
+                  <div class="mb-3">
+                     <label for="workerResetEmail" class="form-label">Worker Email Address</label>
+                     <input type="email" class="form-control" id="workerResetEmail" name="email" required>
+                  </div>
+                  <div class="mb-3">
+                     <label for="workerNewPassword" class="form-label">New Password</label>
+                     <input type="password" class="form-control" id="workerNewPassword" name="new_password" required>
+                  </div>
+                  <div class="mb-3">
+                     <label for="workerConfirmPassword" class="form-label">Confirm Password</label>
+                     <input type="password" class="form-control" id="workerConfirmPassword" name="confirm_password" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary w-100">Reset Password</button>
+               </form>
+            </div>
+         </div>
+      </div>
+   </div>
+   
+   <footer style="text-align: center; margin-top: 80px;">
+      <p id="footer">&copy; 2025 CampusCare Portal. All rights reserved.</p>
+   </footer>
+</div>
+{% endblock %}

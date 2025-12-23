@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+{% block body %}
+<div id="root" style="background-color: #f9fafb; padding: 0px; height: auto;">
+    <div class="d-flex p-2" id="nav-bar">
+            <div>
+                <h1 id="headline">CampusCare</h1>
+                <button id="button-student">Student</button>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center text-decoration-none" data-bs-toggle="dropdown">
+                    <i class="bi bi-person-circle fs-4" id="user" style="padding: 7px 12px; border-radius: 8px; color: black"></i>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#profileModal">Profile</a></li>
+                    <li><a class="dropdown-item" href="/lost-found">Lost & Found</a></li>
+                    <li><hr class="dropdown-divider"></li>
+                    <li><a class="dropdown-item" href="{{ url_for('logout') }}">Logout</a></li>
+                    </ul>
+                </div>
+          </div>
+    </div>
+    <div id="home-content">
+        <div id="request-title">
+            <div>
+                <h2>My Service Requests</h2>
+                <p>Track and manage your campus service requests</p>
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary" onclick="request()"><i class="bi bi-plus-lg"></i>New Request</button>
+            </div>
+        </div>
+        <div id="search-containner">
+            <span class="input-group-text" style="background-color: white; border-radius: 6px 0px 0px 6px; height:40px;">
+                    <i class="bi bi-search"></i>
+            </span>
+            <input id="input" type="text" placeholder="Search your request..." aria-label="Search">
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center gap-2" type="button" id="filterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-funnel"></i>
+                <span id="selected-filter">All</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="filterDropdown">
+                <li><h6 class="dropdown-header">Status</h6></li>
+                <li><a class="dropdown-item filter-option" data-filter="all">All</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="pending">Pending</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="in progress">In Progress</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="completed">Completed</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><h6 class="dropdown-header">Priority</h6></li>
+                <li><a class="dropdown-item filter-option" data-filter="low">Low Priority</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="medium">Medium Priority</a></li>
+                <li><a class="dropdown-item filter-option" data-filter="high">High Priority</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div id="student-request">
+        <div id="request" class="text-center p-4 rounded" style="background-color: #d8e6fd;">
+            <i class="bi-clipboard-check fs-4"></i>
+            <h5 class="mt-2 fw-bold">Service Request</h5>
+            <form action="/student" method="post" enctype="multipart/form-data">
+                <input placeholder="Title *" type="text" name="title" required></input><br>
+                <input placeholder="Location *" type="text" name="location" required></input><br>
+                
+                <select id="priority" name="priority" required>
+                    <option value="" disabled selected>Select Priority *</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                
+                <textarea id="description" placeholder="Description *" type="text" name="description" required></textarea><br>
+                
+                <div class="mb-3" style="display: flex; justify-content:center">
+                    <input class="form-control" type="file" id="image" name="image" style="" accept="image/*">
+                </div>
+                
+                <p></p>
+                <button id="request-button" type="submit" class="btn btn-primary" style="background-color: #0F172A">Send Request</button>
+            </form>
+        </div>
+    </div>
+    <div class="modal fade" id="profileModal" tabindex="-1" aria-labelledby="profileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+        <div class="modal-header">
+            <h5 class="modal-title" id="profileModalLabel">Student Profile</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+            <p><strong>Name:</strong> {{ name }}</p>
+            <p><strong>Total Requests:</strong> {{ total_requests }}</p>
+            <p><strong>Pending:</strong> {{ pending_count }}</p>
+            <p><strong>Resolved:</strong> {{ resolved_count }}</p>
+
+            <hr>
+            <form method="POST" action="/reset-password">
+            <div class="mb-3">
+                <label for="newPassword" class="form-label">New Password</label>
+                <input type="password" class="form-control" id="newPassword" name="new_password" required>
+            </div>
+            <button type="submit" class="btn btn-danger">Reset Password</button>
+            </form>
+        </div>
+        </div>
+    </div>
+    </div>
+    <div id="request-box" class="row g-4">
+        </div>
+
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Attached Image</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" src="" class="img-fluid" alt="Attached Request Image">
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+  window.requests = {{ requests | tojson }};
+</script>
+<script src="{{ url_for('static', filename='scripts.js') }}"></script>
+{% endblock %}
